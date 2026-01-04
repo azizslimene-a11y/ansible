@@ -1,0 +1,9 @@
+this command is used to copy your id into other servers that u r trying to manage so it can connect through ssh
+ssh-copy-id -i ~/.ssh/ed_25519.pub [dest ip address]
+
+-since i didnt use a passphrase to the key, after entering this command, you ll find a file named authorized keys on the dest machine and find the key you added there,
+the next time you connect to said machine you use this command :
+
+ssh -i ~/.ssh/ed_25519.pub [dest ip add]
+
+or just ssh destip
