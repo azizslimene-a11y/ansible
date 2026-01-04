@@ -19,3 +19,11 @@ the command goes smth like this
 
 ansible all --key-file~/.ssh/ed_25519.pub -i inventory -m ping
 
+
+
+---------------------------------------------------------------------------------------
+this command is used to gather info abt hosts 
+ansible all -m gather-facts
+
+or if u want to limit to one server
+ansible all -m gather-facts --limit [ip add]
