@@ -7,3 +7,15 @@ the next time you connect to said machine you use this command :
 ssh -i ~/.ssh/ed_25519.pub [dest ip add]
 
 or just ssh destip
+
+
+
+
+----------------------------------------------------------------------------------
+
+the way to test if ansible connects to the hosts in your inventory is through the ping module, this connects using ssh to all the hosts in ur inventory
+the command goes smth like this
+
+
+ansible all --key-file~/.ssh/ed_25519.pub -i inventory -m ping
+

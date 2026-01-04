@@ -1,6 +1,7 @@
-this is an example of an inventory
-an inventory contains all the ip adresses of the managed servers 
+#this is an example of an inventory
+#an inventory contains all the ip adresses of the managed servers 
 
 192.168.10.1
 192.168.20.1
 192.168.30.1
+
