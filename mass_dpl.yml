@@ -19,7 +19,7 @@
   #pretasks hatitha just to ensure li hedhi tt3ada kbal l actual deployment tasks
     - name: checking the variables
       assert:
-        that: 
+        that:
           - dest_path is defined
           - source_path is defined
         fail_msg: "Missing variables, make sure these variables are correct: dest_path, target, source_path"
@@ -29,7 +29,7 @@
 #fail_msg is the output of a failure in one of the paths
 #i wont check the target cz its already defaulted to all, i made the mistake of checking it XD
 
-  tasks: 
+  tasks:
     - name: check if the source file actually exists
       local_action:
         module: stat
@@ -37,7 +37,7 @@
       register: reg_source_check
       run_once: true
 
-#tbh im not convinced bl register ama i dont know how to send a fail message from the stat module, so im seperating them into two tasks
+#tbh im not convinced bl register ama i dont know how to send a fail message from the stat module, so im seperating them into two tasks for now
 #i used the register to use the output of the stat in the next task
 
     - name: fail message
@@ -49,4 +49,16 @@
 #behi, the stat returns a dictionary with alot of values, khamem feha ka liste fl python 
 #feha value esmha exists, hedhi feha true ken l path mawjoud, w false if not
 #if it s false, assert returns the fail message
+
+#doing the same thing for the dest path
+    - name: check if destination file actually exists
+        module: stat
+        path: "{{ dest_path }}"
+        register: reg_dest_check
+
+    - name: creating the path if it doesnt exist 
+        msg: "dest path doesnt exist on '{{ ansible_user }}' , creating"
+        ansible.builtin.command: mkdir "{{ dest_path }}"
+        msg: "dest path created"
+        when: reg_dest_check.stat.exists == true
 
