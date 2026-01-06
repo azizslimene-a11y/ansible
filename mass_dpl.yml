@@ -1,0 +1,33 @@
+---
+#this will be the yaml file for the mass deployment playbook
+#the command used to execute this will look like
+#ansible-playbook mass_dep.yml -e "dest_path=/dest/path/example target=webservers source_path=/source/path/example"   
+#l command tnjm tkoun ghalta ama bch ysir deployment li naarfou li lezm ykoun fama target, source, w dest, ken nalka hajet neksin f thneya tw nzidhom
+
+
+#playbook def
+- name: mass deployment
+  hosts: "{{ target | default('all') }}"
+  serial: "{{ serial | default('100%') }}"
+  become: yes
+#basically li f wost l hosts howa variable keeen l target specified fl command, bch ystaamlou, sinon by default yemchi b all
+#serial hedhi haja yeser mezyena, ken nhottlou ena serial=3 fl command, yabda b 3 machines, ykmlhom, baed ytaada l 3 okhrin
+#yaani bch in case ykounou aandi barcha vms bch naaml fehom deployment (weli howa l cas li ena fih) ma ytbloukech LOL
+
+
+  pre_tasks:
+  #pretasks hatitha just to ensure li hedhi tt3ada kbal l actual deployment tasks
+    - name: checking the variables
+      assert:
+        that: 
+          - dest_path is defined
+          - source_path is defined
+        fail_msg: "Missing variables, make sure these variables are correct: dest_path, target, source_path"
+        success_msg: "all good, proceeding to the deployment"
+#assert returns a boolean after checking if the variables are defined or not
+# "that" is used to give the list of variables to check 
+#fail_msg is the output of a failure in one of the paths
+#i wont check the target cz its already defaulted to all, i made the mistake of checking it XD
+
+  tasks: 
+    
