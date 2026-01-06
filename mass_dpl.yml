@@ -30,4 +30,23 @@
 #i wont check the target cz its already defaulted to all, i made the mistake of checking it XD
 
   tasks: 
-    
+    - name: check if the source file actually exists
+      local_action:
+        module: stat
+        path: "{{ source_path }}"
+      register: reg_source_check
+      run_once: true
+
+#tbh im not convinced bl register ama i dont know how to send a fail message from the stat module, so im seperating them into two tasks
+#i used the register to use the output of the stat in the next task
+
+    - name: fail message
+        assert:
+          that:
+            - reg_source_check.stat.exists
+        fail_msg: "the source path you used ('{{ source_path}}') doesnt exist on your machine"
+#wait no, i am convinced by the register now, im a genius XDD
+#behi, the stat returns a dictionary with alot of values, khamem feha ka liste fl python 
+#feha value esmha exists, hedhi feha true ken l path mawjoud, w false if not
+#if it s false, assert returns the fail message
+
