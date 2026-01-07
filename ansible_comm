@@ -27,3 +27,7 @@ ansible all -m gather-facts
 
 or if u want to limit to one server
 ansible all -m gather-facts --limit [ip add]
+
+
+
+yotlb menek l target, win , chnwa l version(latest), 9adech mn copie 3l artifact hedheka nhebbha tdeployi 

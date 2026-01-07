@@ -1,7 +1,4 @@
-#this is an example of an inventory
-#an inventory contains all the ip adresses of the managed servers 
-
-192.168.10.1
-192.168.20.1
-192.168.30.1
+[servers]
+192.168.1.14 ansible_user=ubuntu
+192.168.1.15 ansible_user=ubuntu
 
