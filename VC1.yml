@@ -1,0 +1,47 @@
+---
+- name: version control and deployment
+  hosts: all
+  become: no
+
+  vars_prompt:
+    - name: source_dir
+      prompt: "What's the source dir"
+      private: no
+
+    - name: dest_dir
+      prompt: "What's the dest_dir (needs to be like [folder_name/], please dont leave it blank if u r keeping .ssh or any important files in ~)"
+      private: no
+
+    - name: version
+      prompt: "What's the version you are uploading"
+      private: no
+
+  tasks:
+    - name: removing old version
+      ansible.builtin.file:
+        path: "/home/ubuntu/{{ dest_dir }}"
+        state: absent
+      # idk this is what i could find best suited for my use XDD
+
+    - name: deploying new version
+      ansible.builtin.copy:
+        src: "{{ source_dir }}/"
+        dest: "/home/ubuntu/{{ dest_dir }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+
+    - name: Show deployment completion message
+      ansible.builtin.debug:
+        msg: "DEPLOYMENT COMPLETED SUCCESSFULLY"
+
+    # hedhi optional ama habit naaml deployment verification, so there it is
+    - name: Verify deployment
+      ansible.builtin.stat:
+        path: "/home/ubuntu/{{ dest_dir }}"
+      register: deployed_dir
+
+    - name: Confirm deployment success
+      ansible.builtin.debug:
+        msg: "Files deployed to /home/ubuntu/{{ dest_dir }}/"
+      when: deployed_dir.stat.exists
