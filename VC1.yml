@@ -16,7 +16,24 @@
       prompt: "What's the version you are uploading"
       private: no
 
+    - name: num_copy
+      prompt: "what's the number of copies you want"
+      private: no
+
   tasks:
+
+#using this for testing cz i keep getting an error abt the source not existing while it does
+    - name: verifying the source path
+      ansible.builtin.stat:
+        path: "{{ source_dir }}/{{ version }}/"
+      register: source_check
+      delegate_to: localhost
+
+    - name: outputting if the file exists or not
+      ansible.builtin.debug:
+        msg: "file path exits"
+      when: source_check.stat.exists
+
     - name: removing old version
       ansible.builtin.file:
         path: "/home/ubuntu/{{ dest_dir }}"
@@ -25,11 +42,12 @@
 
     - name: deploying new version
       ansible.builtin.copy:
-        src: "{{ source_dir }}/"
-        dest: "/home/ubuntu/{{ dest_dir }}"
+        src: "{{ source_dir }}/{{ version }}/"
+        dest: "/home/ubuntu/{{ dest_dir }}/{{ version }}copy_{{ item }}/"
         owner: ubuntu
         group: ubuntu
         mode: "0644"
+      loop: "{{ range(1, (num_copy | int) + 1) | list }}"
 
     - name: Show deployment completion message
       ansible.builtin.debug:
