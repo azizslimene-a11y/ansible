@@ -63,3 +63,5 @@
       ansible.builtin.debug:
         msg: "Files deployed to /home/ubuntu/{{ dest_dir }}/"
       when: deployed_dir.stat.exists
+
+...
