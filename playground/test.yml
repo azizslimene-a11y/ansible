@@ -1,0 +1,20 @@
+---
+- name: test
+  hosts: localhost
+
+  pre_tasks:
+    - name: getting the actual number of versions
+      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/
+      register: num_ver
+      delegate_to: localhost
+
+    - name: correspondance of latest
+      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/ | tail -n 1
+      register: latest
+      delegate_to: localhost
+
+  tasks:
+    - name: verification
+      ansible.builtin.debug:
+        msg: "the number of versions are {{ num_ver.stdout_lines }} and the latest is {{ latest.stdout }}"
+...
