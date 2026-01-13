@@ -5,12 +5,12 @@
 
   pre_tasks:
     - name: getting the actual number of versions
-      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/
+      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/front/
       register: num_ver
       delegate_to: localhost
 
     - name: correspondance of latest
-      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/ | tail -n 1
+      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/front/ | tail -n 1
       register: latest
       delegate_to: localhost
 
@@ -35,7 +35,7 @@
 
     - name: ask version
       ansible.builtin.pause:
-        msg: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest "
+        prompt: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest "
       register: version_input
 
     - set_fact:
@@ -67,13 +67,13 @@
 
     - name: removing old version
       ansible.builtin.file:
-        path: "/home/ubuntu/{{ dest_dir }}"
+        path: "/home/ubuntu/{{ dest_dir }}/"
         state: absent
       # idk this is what i could find best suited for my use XDD
 
     - name: deploying new version
       ansible.builtin.copy:
-        src: "{{ source_dir }}/{{ version }}/"
+        src: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
         dest: "/home/ubuntu/{{ dest_dir }}/{{ version }}copy_{{ item }}/"
         owner: ubuntu
         group: ubuntu
