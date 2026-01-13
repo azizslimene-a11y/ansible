@@ -3,18 +3,29 @@
   hosts: all
   become: no
 
+  pre_tasks:
+    - name: getting the actual number of versions
+      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/
+      register: num_ver
+      delegate_to: localhost
+
+    - name: correspondance of latest
+      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/ | tail -n 1
+      register: latest
+      delegate_to: localhost
+
   vars_prompt:
-    - name: source_dir
-      prompt: "What's the source dir"
+    - name: source_input
+      prompt: "What's the source dir: 1-Back 2-Front"
       private: no
 
     - name: dest_dir
       prompt: "What's the dest_dir (needs to be like [folder_name/], please dont leave it blank if u r keeping .ssh or any important files in ~)"
       private: no
 
-    - name: version
-      prompt: "What's the version you are uploading"
-      private: no
+#    - name: version
+#      prompt: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest "
+#      private: no
 
     - name: num_copy
       prompt: "what's the number of copies you want"
@@ -22,10 +33,30 @@
 
   tasks:
 
+    - name: ask version
+      ansible.builtin.pause:
+        msg: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest "
+      register: version_input
+
+    - set_fact:
+        version: "{{ latest.stdout if version_input.user_input == 'latest' else version_input.user_input }}"
+        source_dir: "{{ 'back' if source_input == '1' else 'front' }}"
+
+########################################################################
+#i used a task called ask version because ansible runs in this order
+# 1-vars
+# 2-vars_prompt
+# 3-pretasks
+# 4-tasks
+#so using the variables generated from the pretasks in the pretasks in the vars_prompt isnt even possibnle cz it runs before the pretasks
+#so here using the pause module i can enter the version i want and save it in a variable named version_input
+#and then the set fact will set the version for me with conditions on the latest
+#######################################################################
+
 #using this for testing cz i keep getting an error abt the source not existing while it does
     - name: verifying the source path
       ansible.builtin.stat:
-        path: "{{ source_dir }}/{{ version }}/"
+        path: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
       register: source_check
       delegate_to: localhost
 
