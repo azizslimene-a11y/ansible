@@ -67,14 +67,14 @@
 
     - name: removing old version
       ansible.builtin.file:
-        path: "/home/ubuntu/{{ dest_dir }}/"
+        path: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}/"
         state: absent
       # idk this is what i could find best suited for my use XDD
 
     - name: deploying new version
       ansible.builtin.copy:
         src: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
-        dest: "/home/ubuntu/{{ dest_dir }}/{{ version }}copy_{{ item }}/"
+        dest: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}/{{ version }}copy_{{ item }}/"
         owner: ubuntu
         group: ubuntu
         mode: "0644"
@@ -95,11 +95,10 @@
         msg: "Files deployed to /home/ubuntu/{{ dest_dir }}/ , now saving it in the {{ source_dir }}_commit"
       when: deployed_dir.stat.exists
 
-    - name: updating the commit
-      ansible.builtin.copy:
-        content: "version {{ version }} _ {{ ansible_date_time.date }} :: {{ ansible_date_time.time }}"
-        dest: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}_commit"
-
+    - name: Append new deployment record to _commit file
+      ansible.builtin.lineinfile:
+        path: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}_commit"
+        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }}"
 
 
 ...
