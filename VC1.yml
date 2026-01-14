@@ -20,7 +20,7 @@
       private: no
 
     - name: dest_dir
-      prompt: "What's the dest_dir (needs to be like [folder_name/], please dont leave it blank if u r keeping .ssh or any important files in ~)"
+      prompt: "What's the dest_dir (please dont leave it blank if u r keeping .ssh or any important files in ~)"
       private: no
 
 #    - name: version
@@ -92,7 +92,14 @@
 
     - name: Confirm deployment success
       ansible.builtin.debug:
-        msg: "Files deployed to /home/ubuntu/{{ dest_dir }}/"
+        msg: "Files deployed to /home/ubuntu/{{ dest_dir }}/ , now saving it in the {{ source_dir }}_commit"
       when: deployed_dir.stat.exists
+
+    - name: updating the commit
+      ansible.builtin.copy:
+        content: "version {{ version }} _ {{ ansible_date_time.date }} :: {{ ansible_date_time.time }}"
+        dest: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}_commit"
+
+
 
 ...
