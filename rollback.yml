@@ -1,0 +1,7 @@
+---
+- name: rollback
+  hosts: all
+  become: false
+
+  tasks:
+    - name: read log
