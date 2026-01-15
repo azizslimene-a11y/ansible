@@ -3,6 +3,9 @@
   hosts: all
   become: no
 
+
+  vars:
+    rollback: false
   pre_tasks:
     - name: getting the actual number of versions
       ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/front/
@@ -37,9 +40,13 @@
       ansible.builtin.pause:
         prompt: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest "
       register: version_input
+      when: version is not defined
 
     - set_fact:
         version: "{{ latest.stdout if version_input.user_input == 'latest' else version_input.user_input }}"
+      when: version is not defined
+
+    - set_fact:
         source_dir: "{{ 'back' if source_input == '1' else 'front' }}"
 
 ########################################################################
@@ -98,7 +105,7 @@
     - name: Append new deployment record to _commit file
       ansible.builtin.lineinfile:
         path: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}_commit"
-        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }}"
+        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
 
 
 ...
