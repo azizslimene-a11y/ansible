@@ -3,5 +3,44 @@
   hosts: all
   become: false
 
+
+  vars_prompt:
+    - name: dir_input
+      prompt: which directory do u want to rollback? 1-back 2-front
+      private: no
+    - name: dest
+      prompt: which directory do u want to rollback in
+      private: no
+    - name: host
+      prompt: choose the host u want to do the roll back on
+      private: no
+
+
   tasks:
-    - name: read log
+
+    - set_fact:
+        dir: "{{ 'back' if dir_input == '1' else 'front' }}"
+
+    - name: Read commit file
+      ansible.builtin.command: >
+        cat /home/ubuntu/test/{{ dir }}_commit
+      register: commit_log
+
+    - name: Fail if rollback impossible
+      ansible.builtin.fail:
+        msg: "Rollback not possible: less than 2 deployments."
+      when: commit_log.stdout_lines | length < 2
+
+    - set_fact:
+        rollback_version: "{{ commit_log.stdout_lines[-2].split(' | ')[1] }}"
+        rollback_copy: "{{ commit_log.stdout_lines[-2].split(' | ')[3] }}"
+    - name: Redeploy using deploy playbook
+      ansible.builtin.command: >
+        ansible-playbook VC1.yml
+        -e "version={{ rollback_version }}"
+        -e "source_input={{ dir_input }}"
+        -e "dest_dir={{ dest }}"
+        -e "num_copy={{ rollback_copy }}"
+        -e "rollback=true"
+        --limit {{ host }}
+      delegate_to: localhost
