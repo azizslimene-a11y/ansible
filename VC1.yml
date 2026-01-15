@@ -6,17 +6,6 @@
 
   vars:
     rollback: false
-  pre_tasks:
-    - name: getting the actual number of versions
-      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/front/
-      register: num_ver
-      delegate_to: localhost
-
-    - name: correspondance of latest
-      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/front/ | tail -n 1
-      register: latest
-      delegate_to: localhost
-
   vars_prompt:
     - name: source_input
       prompt: "What's the source dir: 1-Back 2-Front"
@@ -33,6 +22,18 @@
     - name: num_copy
       prompt: "what's the number of copies you want"
       private: no
+
+
+  pre_tasks:
+    - name: getting the actual number of versions
+      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/front/
+      register: num_ver
+      delegate_to: localhost
+
+    - name: correspondance of latest
+      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/front/ | tail -n 1
+      register: latest
+      delegate_to: localhost
 
   tasks:
 
