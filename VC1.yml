@@ -24,18 +24,32 @@
       private: no
 
 
-  pre_tasks:
-    - name: getting the actual number of versions
-      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/front/
-      register: num_ver
-      delegate_to: localhost
+#  pre_tasks:
+#    - name: getting the actual number of versions
+#      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/{{ source_dir }}/
+#      register: num_ver
+#      delegate_to: localhost
 
-    - name: correspondance of latest
-      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/front/ | tail -n 1
-      register: latest
-      delegate_to: localhost
+#    - name: correspondance of latest
+#      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/front/ | tail -n 1
+#      register: latest
+#      delegate_to: localhost
 
   tasks:
+    - set_fact:
+        source_dir: "{{ 'back' if source_input == '1' else 'front' }}"
+
+    - name: getting the actual number of versions
+      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/{{ source_dir }}/
+      register: num_ver
+      delegate_to: localhost
+      run_once: true
+
+    - name: correspondance of latest
+      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/{{ source_dir }}/ | tail -n 1
+      register: latest
+      delegate_to: localhost
+      run_once: true
 
     - name: ask version
       ansible.builtin.pause:
@@ -62,6 +76,7 @@
 #######################################################################
 
 #using this for testing cz i keep getting an error abt the source not existing while it does
+
     - name: verifying the source path
       ansible.builtin.stat:
         path: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
