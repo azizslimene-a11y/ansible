@@ -1,0 +1,82 @@
+---
+- name: version control and deployment
+  hosts: all
+  become: no
+
+  vars:
+    rollback: false
+
+  vars_prompt:
+    - name: source_input
+      prompt: "What's the source dir: 1-Back 2-Front"
+      private: no
+
+    - name: dest_dir
+      prompt: "What's the dest_dir"
+      private: no
+
+    - name: num_copy
+      prompt: "what's the number of copies you want"
+      private: no
+
+  tasks:
+    - name: Define source_dir
+      set_fact:
+        source_dir: "{{ 'back' if source_input == '1' else 'front' }}"
+
+    - name: Get available versions
+      command: ls -v /home/kali/Desktop/ansible/testls/{{ source_dir }}/
+      register: num_ver
+      delegate_to: localhost
+      run_once: true
+
+    - name: Get latest version
+      shell: ls -v /home/kali/Desktop/ansible/testls/{{ source_dir }}/ | tail -n 1
+      register: latest
+      delegate_to: localhost
+      run_once: true
+
+    - name: Ask version (ONCE)
+      pause:
+        prompt: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest"
+      register: version_input
+      run_once: true
+      delegate_to: localhost
+
+    - name: Set GLOBAL version
+      set_fact:
+        version: "{{ latest.stdout if version_input.user_input == 'latest' else version_input.user_input }}"
+      run_once: true
+
+    - name: Verify source exists
+      stat:
+        path: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
+      register: source_check
+      delegate_to: localhost
+      run_once: true
+
+    - name: Fail if source does not exist
+      fail:
+        msg: "Source version {{ version }} does not exist"
+      when: not source_check.stat.exists
+      run_once: true
+
+    - name: Remove old deployment
+      file:
+        path: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}/"
+        state: absent
+
+    - name: Deploy new version
+      copy:
+        src: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
+        dest: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}/{{ version }}copy_{{ item }}/"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+      loop: "{{ range(1, (num_copy | int) + 1) | list }}"
+
+    - name: Save deployment record
+      lineinfile:
+        path: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}_commit"
+        create: yes
+        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"

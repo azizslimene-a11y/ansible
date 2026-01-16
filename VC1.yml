@@ -55,14 +55,18 @@
       ansible.builtin.pause:
         prompt: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest "
       register: version_input
-      when: version is not defined
+      run_once: true
+      delegate_to: localhost
 
-    - set_fact:
+#    - set_fact:
+ #       version: "{{ latest.stdout if version_input.user_input == 'latest' else .version_input.user_input }}"
+  #    when: version is not defined
+
+    - name: Set GLOBAL version
+      set_fact:
         version: "{{ latest.stdout if version_input.user_input == 'latest' else version_input.user_input }}"
-      when: version is not defined
+      run_once: true
 
-    - set_fact:
-        source_dir: "{{ 'back' if source_input == '1' else 'front' }}"
 
 ########################################################################
 #i used a task called ask version because ansible runs in this order
