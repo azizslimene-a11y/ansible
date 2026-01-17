@@ -1,0 +1,17 @@
+---
+- name: testing the jar find tasks
+  hosts: all
+
+  tasks:
+    - name: finding the actual .jar file
+      ansible.builtin.find:
+        paths: "~/collectors/rt/v1/"   # ← add version!
+        patterns: "*.jar"
+        file_type: file
+      register: deployment_jar
+      delegate_to: localhost
+      run_once: true
+
+    - name: testing jar file - first found
+      ansible.builtin.debug:
+        msg: "First JAR path: {{ deployment_jar.files[0].path | default('No files found') }}"

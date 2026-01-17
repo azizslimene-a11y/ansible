@@ -8,45 +8,30 @@
     rollback: false
   vars_prompt:
     - name: source_input
-      prompt: "What's the source dir: 1-Back 2-Front"
+      prompt: "What's the source dir: 1-rt 2-path"
       private: no
 
-    - name: dest_dir
-      prompt: "What's the dest_dir (please dont leave it blank if u r keeping .ssh or any important files in ~)"
-      private: no
-
-#    - name: version
-#      prompt: "What's the version you are uploading: {{ num_ver.stdout_lines }}, or choose latest "
-#      private: no
+#    - name: dest_dir
+ #     prompt: "What's the dest_dir (please dont leave it blank if u r keeping .ssh or any important files in ~)"
+  #    private: no
 
     - name: num_copy
       prompt: "what's the number of copies you want"
       private: no
 
 
-#  pre_tasks:
-#    - name: getting the actual number of versions
-#      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/{{ source_dir }}/
-#      register: num_ver
-#      delegate_to: localhost
-
-#    - name: correspondance of latest
-#      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/front/ | tail -n 1
-#      register: latest
-#      delegate_to: localhost
-
   tasks:
     - set_fact:
-        source_dir: "{{ 'back' if source_input == '1' else 'front' }}"
+        source_dir: "{{ 'rt' if source_input == '1' else 'path' }}"
 
-    - name: getting the actual number of versions
-      ansible.builtin.command: ls -v /home/kali/Desktop/ansible/testls/{{ source_dir }}/
+    - name: getting the versions
+      ansible.builtin.command: ls -v ~/collectors/{{ source_dir }}/
       register: num_ver
       delegate_to: localhost
       run_once: true
 
     - name: correspondance of latest
-      ansible.builtin.shell: ls -v  /home/kali/Desktop/ansible/testls/{{ source_dir }}/ | tail -n 1
+      ansible.builtin.shell: ls -v  ~/collectors/{{ source_dir }}/ | tail -n 1
       register: latest
       delegate_to: localhost
       run_once: true
@@ -57,10 +42,6 @@
       register: version_input
       run_once: true
       delegate_to: localhost
-
-#    - set_fact:
- #       version: "{{ latest.stdout if version_input.user_input == 'latest' else .version_input.user_input }}"
-  #    when: version is not defined
 
     - name: Set GLOBAL version
       set_fact:
@@ -81,9 +62,10 @@
 
 #using this for testing cz i keep getting an error abt the source not existing while it does
 
+#---------------------- source path check -----------------
     - name: verifying the source path
       ansible.builtin.stat:
-        path: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
+        path: "~/collectors/{{ source_dir }}/{{ version }}/"
       register: source_check
       delegate_to: localhost
 
@@ -92,16 +74,35 @@
         msg: "file path exits"
       when: source_check.stat.exists
 
-    - name: removing old version
+#--------------------------removing old .jar ----------------------------
+    - name: find old jar files in collector directories
+      ansible.builtin.find:
+        paths: "~/collectors/{{ source_dir }}_{{ item }}/"
+        patterns: "*.jar"
+      loop: "{{  range(1, (num_copy | int) + 1) | list  }}"
+      register: found_jars
+
+    - name: remove old jar files
       ansible.builtin.file:
-        path: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}/"
+        path: "{{ item.path }}"
         state: absent
-      # idk this is what i could find best suited for my use XDD
+      loop: "{{ found_jars.results | map(attribute='files') | flatten }}"
+
+#-------------------------deployment-------------------
+    - name: finding the actual .jar file
+      ansible.builtin.find:
+        paths: "~/collectors/{{ source_dir }}/{{ version }}/"
+        patterns: "*.jar"
+        file_type: file
+      register: deployment_jar
+      delegate_to: localhost
+      run_once: true
+
 
     - name: deploying new version
       ansible.builtin.copy:
-        src: "/home/kali/Desktop/ansible/testls/{{ source_dir }}/{{ version }}/"
-        dest: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}/{{ version }}copy_{{ item }}/"
+        src: "{{ deployment_jar.files[0].path }}"
+        dest: "~/collectors/{{ source_dir }}_{{ item }}/"
         owner: ubuntu
         group: ubuntu
         mode: "0644"
@@ -111,21 +112,10 @@
       ansible.builtin.debug:
         msg: "DEPLOYMENT COMPLETED SUCCESSFULLY"
 
-    # hedhi optional ama habit naaml deployment verification, so there it is
-    - name: Verify deployment
-      ansible.builtin.stat:
-        path: "/home/ubuntu/{{ dest_dir }}"
-      register: deployed_dir
-
-    - name: Confirm deployment success
-      ansible.builtin.debug:
-        msg: "Files deployed to /home/ubuntu/{{ dest_dir }}/ , now saving it in the {{ source_dir }}_commit"
-      when: deployed_dir.stat.exists
-
+#-----------------------updating commit-----------------
     - name: Append new deployment record to _commit file
       ansible.builtin.lineinfile:
-        path: "/home/ubuntu/{{ dest_dir }}/{{ source_dir }}_commit"
+        path: "~/collectors/{{ source_dir }}_commit"
         line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
-
 
 ...
