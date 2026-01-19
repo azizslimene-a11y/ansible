@@ -1,0 +1,10 @@
+- name: copying sh file
+  hosts: all
+  become: true
+
+  tasks:
+    - name: copying
+      ansible.builtin.copy:
+        src: /etc/init.d/trigger1.sh
+        dest: /etc/init.d/
+

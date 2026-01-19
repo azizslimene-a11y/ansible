@@ -1,7 +1,7 @@
 ---
 - name: version control and deployment
   hosts: all
-  become: no
+  become: false
 
 
   vars:
@@ -10,10 +10,6 @@
     - name: source_input
       prompt: "What's the source dir: 1-rt 2-path"
       private: no
-
-#    - name: dest_dir
- #     prompt: "What's the dest_dir (please dont leave it blank if u r keeping .ssh or any important files in ~)"
-  #    private: no
 
     - name: num_copy
       prompt: "what's the number of copies you want"
@@ -48,19 +44,6 @@
         version: "{{ latest.stdout if version_input.user_input == 'latest' else version_input.user_input }}"
       run_once: true
 
-
-########################################################################
-#i used a task called ask version because ansible runs in this order
-# 1-vars
-# 2-vars_prompt
-# 3-pretasks
-# 4-tasks
-#so using the variables generated from the pretasks in the pretasks in the vars_prompt isnt even possibnle cz it runs before the pretasks
-#so here using the pause module i can enter the version i want and save it in a variable named version_input
-#and then the set fact will set the version for me with conditions on the latest
-#######################################################################
-
-#using this for testing cz i keep getting an error abt the source not existing while it does
 
 #---------------------- source path check -----------------
     - name: verifying the source path
@@ -112,10 +95,24 @@
       ansible.builtin.debug:
         msg: "DEPLOYMENT COMPLETED SUCCESSFULLY"
 
+#-----------------------trigger-------------------------
+    - name: running the new .jar files using the shell script
+      ansible.builtin.command: sh /etc/init.d/trigger1.sh start
+      become: true
+
+    - name: checking the processes
+      ansible.builtin.shell: ps aux | grep jar | grep {{ source_dir }}
+      register: processes
+      become: true
+
+    - name: success message
+      ansible.builtin.debug:
+        msg: " jar files are running correctly"
+      when: processes.stdout_lines | length == num_copy | int
+
 #-----------------------updating commit-----------------
     - name: Append new deployment record to _commit file
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ source_dir }}_commit"
         line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
-
 ...
