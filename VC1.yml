@@ -97,7 +97,7 @@
 
 #-----------------------trigger-------------------------
     - name: running the new .jar files using the shell script
-      ansible.builtin.command: sh /etc/init.d/trigger1.sh start
+      ansible.builtin.command: sh /etc/init.d/trigger1.sh restart
       become: true
 
     - name: checking the processes
@@ -115,4 +115,13 @@
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ source_dir }}_commit"
         line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
+
+    - name: append new deployment in _commit file in local host
+      ansible.builtin.lineinfile:
+        path: "~/collectors/{{ source_dir }}_commit"
+        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
+
+
+
+
 ...

@@ -19,11 +19,11 @@
   tasks:
 
     - set_fact:
-        dir: "{{ 'back' if dir_input == '1' else 'front' }}"
+        dir: "{{ 'rt' if dir_input == '1' else 'path' }}"
 
     - name: Read commit file
       ansible.builtin.command: >
-        cat /home/ubuntu/test/{{ dir }}_commit
+        cat ~/collectors/{{ dir }}_commit
       register: commit_log
 
     - name: Fail if rollback impossible
