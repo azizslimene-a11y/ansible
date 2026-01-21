@@ -11,10 +11,6 @@
       prompt: "What's the source dir: 1-rt 2-path"
       private: no
 
-    - name: num_copy
-      prompt: "what's the number of copies you want"
-      private: no
-
 
   tasks:
     - set_fact:
@@ -60,9 +56,8 @@
 #--------------------------removing old .jar ----------------------------
     - name: find old jar files in collector directories
       ansible.builtin.find:
-        paths: "~/collectors/{{ source_dir }}_{{ item }}/"
+        paths: "~/collectors/{{ source_dir }}/"
         patterns: "*.jar"
-      loop: "{{  range(1, (num_copy | int) + 1) | list  }}"
       register: found_jars
 
     - name: remove old jar files
@@ -85,11 +80,10 @@
     - name: deploying new version
       ansible.builtin.copy:
         src: "{{ deployment_jar.files[0].path }}"
-        dest: "~/collectors/{{ source_dir }}_{{ item }}/"
+        dest: "~/collectors/{{ source_dir }}/"
         owner: ubuntu
         group: ubuntu
         mode: "0644"
-      loop: "{{ range(1, (num_copy | int) + 1) | list }}"
 
     - name: Show deployment completion message
       ansible.builtin.debug:
@@ -119,8 +113,7 @@
     - name: append new deployment in _commit file in local host
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ source_dir }}_commit"
-        line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }} | copies | {{ num_copy }} | rollback | {{ rollback }}"
-      delegate_to: localhost
+        line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }}| rollback | {{ rollback }}"
 
 
 
