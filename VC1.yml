@@ -1,3 +1,4 @@
+
 ---
 - name: version control and deployment
   hosts: all
@@ -19,6 +20,7 @@
   tasks:
     - set_fact:
         source_dir: "{{ 'rt' if source_input == '1' else 'path' }}"
+        trigger_type: "{{ 'real_time' if source_input == '1' else 'path_' }}"
 
     - name: getting the versions
       ansible.builtin.command: ls -v ~/collectors/{{ source_dir }}/
@@ -51,11 +53,7 @@
         path: "~/collectors/{{ source_dir }}/{{ version }}/"
       register: source_check
       delegate_to: localhost
-
-    - name: outputting if the file exists or not
-      ansible.builtin.debug:
-        msg: "file path exits"
-      when: source_check.stat.exists
+      failed_when: not source_check.stat.exists
 
 #--------------------------removing old .jar ----------------------------
     - name: find old jar files in collector directories
@@ -86,42 +84,43 @@
       ansible.builtin.copy:
         src: "{{ deployment_jar.files[0].path }}"
         dest: "~/collectors/{{ source_dir }}_{{ item }}/"
-        owner: ubuntu
-        group: ubuntu
         mode: "0644"
       loop: "{{ range(1, (num_copy | int) + 1) | list }}"
 
-    - name: Show deployment completion message
-      ansible.builtin.debug:
-        msg: "DEPLOYMENT COMPLETED SUCCESSFULLY"
-
 #-----------------------trigger-------------------------
     - name: running the new .jar files using the shell script
-      ansible.builtin.command: sh /etc/init.d/trigger1.sh restart
+      ansible.builtin.shell: sh /etc/init.d/{{ trigger_type }}_collector.sh restart
       become: true
 
     - name: checking the processes
       ansible.builtin.shell: ps aux | grep jar | grep {{ source_dir }}
       register: processes
       become: true
-
-    - name: success message
-      ansible.builtin.debug:
-        msg: " jar files are running correctly"
-      when: processes.stdout_lines | length == num_copy | int
+      failed_when: not processes.stdout_lines | length == num_copy + 1 | int
 
 #-----------------------updating commit-----------------
     - name: Append new deployment record to _commit file
       ansible.builtin.lineinfile:
-        path: "~/collectors/{{ source_dir }}_commit"
+        path: "~/collectors/{{ trigger_type }}_commit"
         line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
+
+    - name: verifying the existence of the commit files in the local host
+      ansible.builtin.stat:
+        path: "~/collectors/{{ trigger_type }}_commit"
+      register: commit_check
+      delegate_to: localhost
+
+    - name: creating the commit if it doesnt exist
+      ansible.builtin.shell: touch ~/collectors/{{ source_dir }}_commit
+      delegate_to: localhost
+      when: not commit_check.stat.exists
 
     - name: append new deployment in _commit file in local host
       ansible.builtin.lineinfile:
-        path: "~/collectors/{{ source_dir }}_commit"
+        path: "~/collectors/{{ trigger_type }}_commit"
         line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }} | copies | {{ num_copy }} | rollback | {{ rollback }}"
       delegate_to: localhost
-
+      when: commit_check.stat.exists
 
 
 
