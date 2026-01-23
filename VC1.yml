@@ -40,6 +40,8 @@
       register: version_input
       run_once: true
       delegate_to: localhost
+      until: version_input.user_input in ['v1', 'v2', 'latest']
+      delay: 1
 
     - name: Set GLOBAL version
       set_fact:
