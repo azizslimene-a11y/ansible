@@ -1,10 +1,12 @@
 #!/bin/sh
+USER_NAME="$(logname 2>/dev/null || whoami)"
+echo "$USER_NAME"
 case "$1" in
    start)
      echo -n "
             REAl TIME COLLECTOR START "
 
-     cd /home/kali/collectors/rt_1
+     cd /home/$USER_NAME/collectors/rt_1
      java -jar rt*.jar 01 1>> /srv/www/tracking/log_succcess_rt_1.log 2>> /srv/www/tracking/log_err_rt_1.log &
 
    ;;
