@@ -19,9 +19,13 @@ then copy it to ur cients:
 
 ssh-copy-id -i ~/.ssh/id_ed25519.pub user@ip
 
-before doing anything u should set your ssh id by :
+[to do every time you reboot the machine if u have a password on ur private key]before doing anything u should set your ssh id by :
 
 ssh-add ~/.ssh/id_ed25519
+
+
+(its better not to have a password on it cz that ll become tedious with time)
+
 
 then you are all set to use ssh,after creating your inventory, you can test ansible connectivity by using the ping module:
 
