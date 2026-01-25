@@ -32,3 +32,19 @@ then you are all set to use ssh,after creating your inventory, you can test ansi
 ansible all --key-file ~/.ssh/id_ed25519 -i inventory -m ping
 
 
+the only thing left is the vault, these are the following commands to use to create and use one:
+
+- ansible-vault create vault.yml
+
+then choose a password and then put in this:
+
+ansible_become_password: "YOUR_SUDO_PASSWORD"
+
+
+then save by using :wq
+
+if u want to verify that it has been encrypted just use 
+
+- cat vault.yml
+
+
