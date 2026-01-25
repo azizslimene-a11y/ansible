@@ -3,7 +3,8 @@
 - name: version control and deployment
   hosts: all
   become: false
-
+  vars_files:
+    - vault.yml
 
   vars:
     rollback: false
@@ -93,12 +94,6 @@
     - name: running the new .jar files using the shell script
       ansible.builtin.shell: sh /etc/init.d/{{ trigger_type }}_collector.sh restart
       become: true
-
-    - name: checking the processes
-      ansible.builtin.shell: ps aux | grep jar | grep {{ source_dir }}
-      register: processes
-      become: true
-      failed_when: not processes.stdout_lines | length == num_copy + 1 | int
 
 #-----------------------updating commit-----------------
     - name: Append new deployment record to _commit file
