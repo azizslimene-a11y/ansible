@@ -1,4 +1,6 @@
 - nhather installation mte3 ansible fl control host (documentation)
 - how to configure ssh keys 
 - vault ansible builtin feature (to test and documentation) for passwords
--  
+- if the commit doesnt exist the playbook must create it  
+- fix the success message of the trigger
+- if ansible doesnt find the commit file, it ll create its own

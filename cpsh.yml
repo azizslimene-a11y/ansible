@@ -5,6 +5,6 @@
   tasks:
     - name: copying
       ansible.builtin.copy:
-        src: /etc/init.d/trigger1.sh
+        src: ~/Desktop/ansible/trigger1.sh
         dest: /etc/init.d/
 

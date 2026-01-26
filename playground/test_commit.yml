@@ -1,0 +1,25 @@
+- name: testing the commit creation with the block system and when
+  hosts: localhost
+
+  tasks:
+    - name: verifying the commit path
+      ansible.builtin.stat:
+        path: "~/collectors/path_collectors"
+      register: commit_check
+      delegate_to: localhost
+
+    - name: local host commit
+      when: not commit_check.stat.exists
+      block:
+        - name: create the commit
+          ansible.builtin.shell: mkdir ~/collectors/path_collectors
+          delegate_to: localhost
+
+      always:
+        - name: append the new line into the commit
+          ansible.builtin.lineinfile:
+            path: "~/collectors/path_commit"
+            line: "meow"
+          delegate_to: localhost
+
+#zeyda "Lkhr faezt l blocks just use when wkhw 

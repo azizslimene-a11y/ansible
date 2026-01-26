@@ -10,7 +10,7 @@
     rollback: false
   vars_prompt:
     - name: source_input
-      prompt: "What's the source dir: 1-rt 2-path"
+      prompt: "What's the source dir: 1-rt 2-path 3-alert 4-autoreport"
       private: no
 
     - name: num_copy
@@ -20,8 +20,18 @@
 
   tasks:
     - set_fact:
-        source_dir: "{{ 'rt' if source_input == '1' else 'path' }}"
+        source_dir: >-
+          {{ 'rt'
+             if source_input == '1'
+             else 'path'
+             if source_input == '2'
+             else 'allert'
+             if source_input == '3'
+             else 'autoreport'
+          }}
         trigger_type: "{{ 'real_time' if source_input == '1' else 'path_' }}"
+
+
 
     - name: getting the versions
       ansible.builtin.command: ls -v ~/collectors/{{ source_dir }}/
