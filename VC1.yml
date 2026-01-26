@@ -29,19 +29,27 @@
              if source_input == '3'
              else 'autoreport'
           }}
-        trigger_type: "{{ 'real_time' if source_input == '1' else 'path_' }}"
 
+    trigger_type: >-
+      {{ 'real_time'
+         if source_input == '1'
+         else 'path_'
+         if source_input == '2'
+         else 'allert_'
+         if source_input == '3'
+         else 'autoreport_'
+      }}
+
+    - name: correspondance of latest
+      ansible.builtin.shell: ls -v  ~/collectors/{{ source_dir }}/ | tail -n 1
+      register: latest
+      delegate_to: localhost
+      run_once: true
 
 
     - name: getting the versions
       ansible.builtin.command: ls -v ~/collectors/{{ source_dir }}/
       register: num_ver
-      delegate_to: localhost
-      run_once: true
-
-    - name: correspondance of latest
-      ansible.builtin.shell: ls -v  ~/collectors/{{ source_dir }}/ | tail -n 1
-      register: latest
       delegate_to: localhost
       run_once: true
 
