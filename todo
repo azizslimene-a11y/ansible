@@ -4,3 +4,22 @@
 - if the commit doesnt exist the playbook must create it  
 - fix the success message of the trigger
 - if ansible doesnt find the commit file, it ll create its own
+
+
+
+behi:
+aci taaml l kwaret 
+accent lehin b tout ce qui est servers w maintainance w web
+l carte tabaath l info fi ip packet fih raw data 3l position mte3 l carte etc
+famma tracking service yched l trames hedhoukoum yejbed menhom l raw data w yÈottha f bse de donné haka (id_card, rawdata)
+then khedmti ena fl collectors li houma des codes .jar ydecryptiw l raw data into human readable data
+then ml collectors they get saved fl archive
+then l web baed l consumer yodkhl ll site web yaccedi ychouf l data mte" l carde mte3ou li marbouta b karhabtou 
+
+
+fl chap 1 bch npresenti l charika
+diagrame sghir mte3 l charika 
+baed problematique
+baed sollution
+baed aalech khtart ansible (comparaison mabin ansible w puppet)
+baed nodkhl nfalla7 fl core concepts w l playbooks
