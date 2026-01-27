@@ -10,7 +10,7 @@
     rollback: false
   vars_prompt:
     - name: source_input
-      prompt: "What's the source dir: 1-rt 2-path 3-alert 4-autoreport"
+      prompt: "What's the source dir: 1-rt 2-path 3-alert 4-autoreport 5-options"
       private: no
 
     - name: num_copy
@@ -28,6 +28,8 @@
              else 'alert'
              if source_input == '3'
              else 'autoreport'
+             if source_input == '5'
+             else 'options'
           }}
 
         trigger_type: >-
@@ -37,7 +39,9 @@
              if source_input == '2'
              else 'alert_'
              if source_input == '3'
-             else 'autoreport_'
+             else 'autoreport'
+             if source_input == '5'
+             else 'options'
           }}
 
     - name: correspondance of latest
