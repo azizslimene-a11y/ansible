@@ -6,7 +6,7 @@
 
   vars_prompt:
     - name: dir_input
-      prompt: which directory do u want to rollback? 1-back 2-front
+      prompt: which directory do u want to rollback? 1-rt 2-path 3-alert 4-autoreport 5-options
       private: no
     - name: dest
       prompt: which directory do u want to rollback in
@@ -19,7 +19,17 @@
   tasks:
 
     - set_fact:
-        dir: "{{ 'rt' if dir_input == '1' else 'path' }}"
+        dir: >-
+          {{ 'rt'
+             if source_input == '1'
+             else 'path'
+             if source_input == '2'
+             else 'alert'
+             if source_input == '3'
+             else 'autoreport'
+             if source_input == '4'
+             else 'options'
+          }}
 
     - name: Read commit file
       ansible.builtin.command: >
