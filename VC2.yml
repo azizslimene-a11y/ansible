@@ -13,11 +13,6 @@
       prompt: "What's the source dir: 1-rt 2-path 3-alert 4-autoreport 5-options"
       private: no
 
-    - name: num_copy
-      prompt: "what's the number of copies you want"
-      private: no
-
-
   tasks:
     - set_fact:
         source_dir: >-
@@ -63,7 +58,7 @@
       register: version_input
       run_once: true
       delegate_to: localhost
-      until: version_input.user_input in num_ver.stdout_lines or version_input.user_input == 'latest'
+      until: version_input.user_input in num_versions.stdout_lines or version_input.user_input == 'latest'
       delay: 1
 
     - name: Set GLOBAL version
@@ -83,9 +78,8 @@
 #--------------------------removing old .jar ----------------------------
     - name: find old jar files in collector directories
       ansible.builtin.find:
-        paths: "~/collectors/{{ source_dir }}_{{ item }}/"
+        paths: "~/collectors/{{ source_dir }}/"
         patterns: "*.jar"
-      loop: "{{  range(1, (num_copy | int) + 1) | list  }}"
       register: found_jars
 
     - name: remove old jar files
@@ -108,9 +102,8 @@
     - name: deploying new version
       ansible.builtin.copy:
         src: "{{ deployment_jar.files[0].path }}"
-        dest: "~/collectors/{{ source_dir }}_{{ item }}/"
+        dest: "~/collectors/{{ source_dir }}/"
         mode: "0644"
-      loop: "{{ range(1, (num_copy | int) + 1) | list }}"
 
 #-----------------------trigger-------------------------
     - name: running the new .jar files using the shell script
@@ -121,7 +114,7 @@
     - name: Append new deployment record to _commit file
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ trigger_type }}_commit"
-        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
+        line: "version | {{ version }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
 
     - name: verifying the existence of the commit files in the local host
       ansible.builtin.stat:
@@ -137,7 +130,7 @@
     - name: append new deployment in _commit file in local host
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ trigger_type }}_commit"
-        line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }} | copies | {{ num_copy }} | rollback | {{ rollback }}"
+        line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }} | rollback | {{ rollback }}"
       delegate_to: localhost
       when: commit_check.stat.exists
 
