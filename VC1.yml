@@ -35,9 +35,9 @@
         trigger_type: >-
           {{ 'real_time'
              if source_input == '1'
-             else 'path_'
+             else 'path'
              if source_input == '2'
-             else 'alert_'
+             else 'alert'
              if source_input == '3'
              else 'autoreport'
              if source_input == '4'
@@ -117,29 +117,44 @@
       ansible.builtin.shell: sh /etc/init.d/{{ trigger_type }}_collector.sh restart
       become: true
 
-#-----------------------updating commit-----------------
-    - name: Append new deployment record to _commit file
-      ansible.builtin.lineinfile:
+#-----------------------commit verification-----------------
+    - name: verifying the existence of the commit files in the client
+      ansible.builtin.stat:
         path: "~/collectors/{{ trigger_type }}_commit"
-        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
+      register: commit_check
+
+    - name: creating the commit if it doesnt exist
+      ansible.builtin.shell: touch ~/collectors/{{ trigger_type }}_commit
+      when: not commit_check.stat.exists
+
 
     - name: verifying the existence of the commit files in the local host
       ansible.builtin.stat:
         path: "~/collectors/{{ trigger_type }}_commit"
       register: commit_check
       delegate_to: localhost
+      run_once: true
 
     - name: creating the commit if it doesnt exist
-      ansible.builtin.shell: touch ~/collectors/{{ source_dir }}_commit
+      ansible.builtin.shell: touch ~/collectors/{{ trigger_type }}_commit
       delegate_to: localhost
       when: not commit_check.stat.exists
+      run_once: true
+
+
+#------------------------commit updates---------------------------
+
+    - name: Append new deployment record to _commit file
+      ansible.builtin.lineinfile:
+        path: "~/collectors/{{ trigger_type }}_commit"
+        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
+
 
     - name: append new deployment in _commit file in local host
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ trigger_type }}_commit"
         line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }} | copies | {{ num_copy }} | rollback | {{ rollback }}"
       delegate_to: localhost
-      when: commit_check.stat.exists
 
 
 
