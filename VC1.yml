@@ -52,7 +52,7 @@
 
 
     - name: getting the versions
-      ansible.builtin.command: ls -v ~/collectors/{{ source_dir }}/
+      ansible.builtin.shell: ls -v ~/collectors/{{ source_dir }}/
       register: num_ver
       delegate_to: localhost
       run_once: true
