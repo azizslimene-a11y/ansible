@@ -28,7 +28,7 @@
              else 'alert'
              if source_input == '3'
              else 'autoreport'
-             if source_input == '5'
+             if source_input == '4'
              else 'options'
           }}
 
@@ -40,7 +40,7 @@
              else 'alert_'
              if source_input == '3'
              else 'autoreport'
-             if source_input == '5'
+             if source_input == '4'
              else 'options'
           }}
 
