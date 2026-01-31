@@ -44,18 +44,18 @@
              else 'options'
           }}
 
+    - name: getting the versions
+      ansible.builtin.shell: ls -v ~/collectors/{{ source_dir }}/
+      register: num_ver
+      delegate_to: localhost
+      run_once: true
+
     - name: correspondance of latest
       ansible.builtin.shell: ls -v  ~/collectors/{{ source_dir }}/ | tail -n 1
       register: latest
       delegate_to: localhost
       run_once: true
 
-
-    - name: getting the versions
-      ansible.builtin.shell: ls -v ~/collectors/{{ source_dir }}/
-      register: num_ver
-      delegate_to: localhost
-      run_once: true
 
     - name: ask version
       ansible.builtin.pause:
@@ -94,7 +94,7 @@
         state: absent
       loop: "{{ found_jars.results | map(attribute='files') | flatten }}"
 
-#-------------------------deployment-------------------
+#-------------------------deployment and trigger-------------------
     - name: finding the actual .jar file
       ansible.builtin.find:
         paths: "~/collectors/{{ source_dir }}/{{ version }}/"
@@ -112,35 +112,9 @@
         mode: "0644"
       loop: "{{ range(1, (num_copy | int) + 1) | list }}"
 
-#-----------------------trigger-------------------------
     - name: running the new .jar files using the shell script
       ansible.builtin.shell: sh /etc/init.d/{{ trigger_type }}_collector.sh restart
       become: true
-
-#-----------------------commit verification-----------------
-    - name: verifying the existence of the commit files in the client
-      ansible.builtin.stat:
-        path: "~/collectors/{{ trigger_type }}_commit"
-      register: commit_check
-
-    - name: creating the commit if it doesnt exist
-      ansible.builtin.shell: touch ~/collectors/{{ trigger_type }}_commit
-      when: not commit_check.stat.exists
-
-
-    - name: verifying the existence of the commit files in the local host
-      ansible.builtin.stat:
-        path: "~/collectors/{{ trigger_type }}_commit"
-      register: commit_check
-      delegate_to: localhost
-      run_once: true
-
-    - name: creating the commit if it doesnt exist
-      ansible.builtin.shell: touch ~/collectors/{{ trigger_type }}_commit
-      delegate_to: localhost
-      when: not commit_check.stat.exists
-      run_once: true
-
 
 #------------------------commit updates---------------------------
 
@@ -148,12 +122,13 @@
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ trigger_type }}_commit"
         line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
-
+        create: yes
 
     - name: append new deployment in _commit file in local host
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ trigger_type }}_commit"
         line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }} | copies | {{ num_copy }} | rollback | {{ rollback }}"
+        create: yes
       delegate_to: localhost
 
 
