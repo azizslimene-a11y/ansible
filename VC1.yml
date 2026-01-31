@@ -121,13 +121,22 @@
     - name: Append new deployment record to _commit file
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ trigger_type }}_commit"
-        line: "version | {{ version }} | copies | {{ num_copy }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | rollback | {{ rollback }}"
+        line: >-
+              version | {{ version }} |
+              copies | {{ num_copy }} |
+              {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} |
+              rollback | {{ rollback }}
         create: yes
 
     - name: append new deployment in _commit file in local host
       ansible.builtin.lineinfile:
         path: "~/collectors/{{ trigger_type }}_commit"
-        line: "host | {{ ansible_default_ipv4.address }} | {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} | version | {{ version }} | copies | {{ num_copy }} | rollback | {{ rollback }}"
+        line: >-
+              host | {{ ansible_default_ipv4.address }} |
+              {{ ansible_date_time.date }} :: {{ ansible_date_time.time }} |
+              version | {{ version }} |
+              copies | {{ num_copy }} |
+              rollback | {{ rollback }}
         create: yes
       delegate_to: localhost
 
